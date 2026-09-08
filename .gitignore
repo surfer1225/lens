@@ -1,0 +1,26 @@
+# SwiftPM
+.build/
+.swiftpm/
+
+# Package.resolved is deliberately NOT ignored. Lens is an application, not a library, so
+# committing the resolved dependency graph is what makes everyone's build reproducible and
+# pins the exact upstream commit that gets compiled.
+
+# Xcode
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+DerivedData/
+
+# Build products from Scripts/package.sh (these live in ~/.cache/lens-build by default,
+# but cover the case where LENS_BUILD_DIR points into the tree)
+*.app/
+*.dmg
+Resources/AppIcon.iconset/
+
+# macOS
+.DS_Store
+
+# Python bytecode cache — embeds absolute source paths
+__pycache__/
+*.pyc
