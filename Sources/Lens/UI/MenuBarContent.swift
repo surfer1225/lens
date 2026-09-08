@@ -29,6 +29,19 @@ struct MenuBarContent: View {
 
         Divider()
 
+        Section("Layout — \(model.layouts.currentSetupDescription)") {
+            // "Update" rather than "Save": Lens records the arrangement continuously, so an
+            // explicit action refreshes the running record rather than pinning a snapshot that
+            // the next automatic capture would silently overwrite.
+            Button("Update Remembered Layout") { model.layouts.saveCurrentLayout() }
+            Button("Restore Remembered Layout") { model.layouts.restoreSavedLayout() }
+                .disabled(!model.layouts.hasSavedLayoutForCurrentSetup)
+            Button("Forget This Setup") { model.layouts.forgetCurrentLayout() }
+                .disabled(!model.layouts.hasSavedLayoutForCurrentSetup)
+        }
+
+        Divider()
+
         Toggle("Launch at Login", isOn: $model.launchesAtLogin)
 
         SettingsLink {

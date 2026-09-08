@@ -46,6 +46,10 @@ public struct Settings: Codable, Equatable, Sendable {
     /// How many frames of history to keep per window for undo/redo.
     public var undoDepth: Int
 
+    /// Remember where windows sit in each display arrangement, and put them back on returning to
+    /// one. Only ever acts on a setup it has seen before.
+    public var automaticLayoutRestore: Bool
+
     public init(
         gaps: Gaps = .none,
         subsequentExecution: SubsequentExecution = .moveToAdjacentDisplay,
@@ -53,7 +57,8 @@ public struct Settings: Codable, Equatable, Sendable {
         unfullscreenBeforeMoving: Bool = true,
         stageManagerInset: Double = 64,
         excludedBundleIDs: [String] = [],
-        undoDepth: Int = 20
+        undoDepth: Int = 20,
+        automaticLayoutRestore: Bool = true
     ) {
         self.gaps = gaps
         self.subsequentExecution = subsequentExecution
@@ -62,6 +67,7 @@ public struct Settings: Codable, Equatable, Sendable {
         self.stageManagerInset = stageManagerInset
         self.excludedBundleIDs = excludedBundleIDs
         self.undoDepth = undoDepth
+        self.automaticLayoutRestore = automaticLayoutRestore
     }
 
     public static let `default` = Settings()
@@ -87,6 +93,7 @@ public struct Settings: Codable, Equatable, Sendable {
         self.stageManagerInset = value(.stageManagerInset, fallback.stageManagerInset)
         self.excludedBundleIDs = value(.excludedBundleIDs, fallback.excludedBundleIDs)
         self.undoDepth = value(.undoDepth, fallback.undoDepth)
+        self.automaticLayoutRestore = value(.automaticLayoutRestore, fallback.automaticLayoutRestore)
     }
 
     public func excludes(bundleID: String?) -> Bool {

@@ -28,6 +28,41 @@ struct GeneralTab: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section("Layouts") {
+                Toggle(
+                    "Restore window layout when displays change",
+                    isOn: $model.settings.automaticLayoutRestore
+                )
+                Text("Lens records where your windows sit in each display arrangement and puts "
+                     + "them back when you return to it — so undocking and redocking stops "
+                     + "scattering everything. It only ever acts on a setup it has seen before.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text("The record updates automatically every 30 seconds while your displays stay "
+                     + "the same, so it always reflects how you last had things.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                LabeledContent("Current setup") {
+                    Text(model.layouts.currentSetupDescription)
+                        .foregroundStyle(.secondary)
+                }
+                LabeledContent("Remembered setups") {
+                    Text("\(model.layouts.library.count)")
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                }
+
+                HStack {
+                    Button("Update Now") { model.layouts.saveCurrentLayout() }
+                    Button("Restore Now") { model.layouts.restoreSavedLayout() }
+                        .disabled(!model.layouts.hasSavedLayoutForCurrentSetup)
+                    Spacer()
+                    Button("Forget All", role: .destructive) { model.layouts.forgetAllLayouts() }
+                        .disabled(model.layouts.library.count == 0)
+                }
+            }
+
             Section("Spacing") {
                 PointStepper(
                     title: "Screen edges",

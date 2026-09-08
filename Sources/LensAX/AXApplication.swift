@@ -45,6 +45,41 @@ public struct AXApplication {
         return nil
     }
 
+    /// Every window this application currently has, in the order the system reports them.
+    ///
+    /// That order is stable for a given set of windows, which is what makes it usable as a
+    /// fallback identity when window titles cannot disambiguate.
+    public var allWindows: [AXWindow] {
+        guard let elements: [AXUIElement] = element.value(kAXWindowsAttribute) else { return [] }
+        return elements.map { AXWindow(element: $0, application: self) }
+    }
+
+    /// Every window of every ordinary application, paired with its position in its own app's
+    /// window list.
+    ///
+    /// Skips agents and background-only processes, which have no user-visible windows to arrange,
+    /// and Lens itself.
+    public static func allVisibleWindows() -> [(window: AXWindow, index: Int)] {
+        let ourBundleID = Bundle.main.bundleIdentifier
+
+        return NSWorkspace.shared.runningApplications
+            .filter { $0.activationPolicy == .regular && $0.bundleIdentifier != ourBundleID }
+            .flatMap { running -> [(AXWindow, Int)] in
+                let app = AXApplication(running: running)
+                // Sweeping every app is the one place a single unresponsive process could stall
+                // the main thread: Accessibility calls block, and the default timeout is several
+                // seconds. Cap it — a beachballing app should cost us a dropped window, not a
+                // frozen menu bar.
+                app.setMessagingTimeout(0.25)
+                return app.allWindows.enumerated().map { ($0.element, $0.offset) }
+            }
+    }
+
+    /// Bounds how long any Accessibility call to this application may block.
+    public func setMessagingTimeout(_ seconds: Float) {
+        AXUIElementSetMessagingTimeout(element, seconds)
+    }
+
     /// See `AXAttribute.enhancedUserInterface`.
     public var enhancedUserInterface: Bool {
         get { element.boolValue(AXAttribute.enhancedUserInterface) ?? false }

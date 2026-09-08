@@ -23,6 +23,7 @@ default shortcuts.
 - [Installing](#installing)
 - [Granting Accessibility access](#granting-accessibility-access)
 - [Configuration](#configuration)
+  - [Layout memory](#layout-memory)
 - [Privacy and security](#privacy-and-security)
 - [Architecture](#architecture)
 - [Why window management on macOS is harder than it looks](#why-window-management-on-macos-is-harder-than-it-looks)
@@ -53,7 +54,7 @@ years of macOS changes made necessary.
 Confirmed on real hardware: tiling, resizing, and moving windows between displays on a
 two-monitor Apple silicon setup, running continuously for days without a crash or leak.
 
-The geometry layer is thoroughly unit-tested — 45 tests across 9 suites, covering every action
+The geometry layer is thoroughly unit-tested — 67 tests across 12 suites, covering every action
 against several display configurations including negative-origin and stacked arrangements. That
 layer is pure, so the tests need no permissions, no display hardware, and no running apps.
 
@@ -83,6 +84,10 @@ Everything Spectacle did:
 
 Plus:
 
+- **Windows come back when you redock.** Unplug a monitor and macOS piles everything onto the
+  remaining display; plug it back in and it leaves them piled. Lens remembers the arrangement for
+  each display setup and restores it automatically. See
+  [Layout memory](#layout-memory).
 - **Repeated presses do something useful.** Press `⌥⌘←` again and the window carries on to the
   display on your left, landing against its right edge — Spectacle's behaviour. On a single
   display it cycles ½ → ⅓ → ⅔ instead. Configurable, including "off".
@@ -243,6 +248,35 @@ Three modes:
 Cycling is timer-free. A press only counts as a repeat if the window is still exactly where Lens
 put it, so a long pause still continues the cycle, but any manual resize starts over. That is more
 predictable than a timeout and needs no clock.
+
+### Layout memory
+
+macOS does not restore window positions when your displays change. Unplug a monitor and
+everything lands on the laptop screen; plug it back in and it stays there. Lens fixes this.
+
+While your displays stay the same, Lens records where every window sits, roughly every 30
+seconds, keyed by a **fingerprint** of the current arrangement — the displays' names,
+resolutions, and relative positions. "Laptop alone", "laptop at the office", and "laptop plus two
+monitors at home" are three separate setups, each remembering its own layout.
+
+When the display configuration changes, Lens waits for it to settle, looks up whatever it last
+recorded for the setup you have just arrived at, and puts the windows back.
+
+Matching a remembered window to a live one runs in two passes: exact window title first, so a
+reopened app lands correctly even if it restored its windows in a different order, then by
+position for untitled windows and apps that reuse a title. Anything unmatched is left strictly
+alone — a window Lens does not recognise is never moved, and a remembered window whose app is not
+running is simply dropped.
+
+Because the fingerprint includes resolution and arrangement, a remembered frame can only ever be
+applied to the exact geometry it was captured on. Changing a display's resolution creates a new
+setup rather than reusing stale coordinates.
+
+Controls live in the menu bar and under **Settings → General → Layouts**. Note that the record
+updates continuously, so *Update Remembered Layout* refreshes the running record rather than
+pinning a permanent snapshot.
+
+Turn the whole thing off with **Restore window layout when displays change**.
 
 ### Exclusions
 

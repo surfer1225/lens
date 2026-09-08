@@ -15,11 +15,14 @@ final class AppModel {
         didSet {
             guard settings != oldValue else { return }
             dispatcher.settings = settings
+            layouts.settings = settings
+            layouts.isEnabled = settings.automaticLayoutRestore
             persist()
         }
     }
 
     let authorizer = AccessibilityAuthorizer()
+    let layouts = LayoutManager()
 
     /// Mirrors `SMAppService`, which is the source of truth; kept as state so the toggle in
     /// Settings stays in sync when macOS refuses a change.
@@ -52,6 +55,10 @@ final class AppModel {
         // The app looks broken and the cause is invisible. Registering up front means an
         // untrusted press beeps instead (see ActionDispatcher.perform), which is diagnosable.
         registerHotkeys()
+
+        layouts.settings = settings
+        layouts.isEnabled = settings.automaticLayoutRestore
+        layouts.start()
 
         if !authorizer.refresh() {
             authorizer.request()
