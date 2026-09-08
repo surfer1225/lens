@@ -48,13 +48,25 @@ years of macOS changes made necessary.
 
 ## Project status
 
-**Early. Treat it as beta.**
+**Working, but young. Treat it as beta.**
 
-The geometry layer is thoroughly unit-tested (45 tests across 9 suites, covering every action on
-several display configurations). The parts that talk to other applications through the
-Accessibility API are inherently harder to test automatically and have had only light manual
-exercise. Expect rough edges with unusual apps, and please open an issue with the app name and
-what happened.
+Confirmed on real hardware: tiling, resizing, and moving windows between displays on a
+two-monitor Apple silicon setup, running continuously for days without a crash or leak.
+
+The geometry layer is thoroughly unit-tested — 45 tests across 9 suites, covering every action
+against several display configurations including negative-origin and stacked arrangements. That
+layer is pure, so the tests need no permissions, no display hardware, and no running apps.
+
+What is *not* systematically verified is the long tail of applications. The Accessibility API is
+where macOS window management gets strange, and every app is entitled to be strange in its own
+way. The known-awkward cases — Terminal's character-cell sizing, Chrome's enhanced-UI attribute,
+fullscreen windows, fixed-size dialogs — each have deliberate handling
+([details](#why-window-management-on-macos-is-harder-than-it-looks)), but "handled in code" and
+"verified against that app on your machine" are different claims and only the first is true for
+most of them.
+
+If something misbehaves, please open an issue with the app name and what you expected — that long
+tail is exactly what needs reports to shorten.
 
 If you want something battle-tested today, use [Rectangle](https://rectangleapp.com) — see
 [Alternatives](#alternatives).
