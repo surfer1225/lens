@@ -24,3 +24,6 @@ Resources/AppIcon.iconset/
 # Python bytecode cache — embeds absolute source paths
 __pycache__/
 *.pyc
+
+# Local working notes for Claude Code — personal context, not part of the project
+.claude/
