@@ -31,6 +31,7 @@ default shortcuts.
 - [Development](#development)
 - [Migrating from Spectacle](#migrating-from-spectacle)
 - [Alternatives](#alternatives)
+- [Contributing](#contributing)
 - [License](#license)
 
 ---
@@ -524,9 +525,16 @@ Worth knowing about, honestly:
 
 Lens exists because it is small enough to read in an afternoon and change to taste.
 
+## Contributing
+
+Bug reports naming a specific application are the most useful thing you can send — see
+[CONTRIBUTING.md](CONTRIBUTING.md) for the setup, the one architectural rule, and what is
+deliberately out of scope. Changes are tracked in [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). Third-party notices are in
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ## Acknowledgements
 

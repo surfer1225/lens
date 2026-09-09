@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: nothing here needs write access.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test and build
+    # arm64 runner, matching the arm64-apple-macos14.0 deployment target.
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          swift --version
+          xcodebuild -version
+
+      # The pure geometry layer. Needs no Accessibility permission, no displays,
+      # and no running applications, so it runs unmodified on a headless runner.
+      - name: Unit tests
+        run: make test
+
+      # Exercises the SwiftPM-free path end to end, including the dependency
+      # commit-pin check and code signing (ad-hoc on CI).
+      - name: Build signed app bundle
+        run: make package
+
+      - name: Verify bundle
+        run: |
+          APP="$HOME/.cache/lens-build/Lens.app"
+          test -x "$APP/Contents/MacOS/Lens"
+          test -f "$APP/Contents/Resources/LICENSE"
+          test -f "$APP/Contents/Resources/THIRD-PARTY-NOTICES.md"
+          lipo -archs "$APP/Contents/MacOS/Lens"
+          codesign --verify --verbose=2 "$APP"
+
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Guards the specific leak classes this repository has actually hit:
+      # a build machine's absolute paths, and Python bytecode caches, which
+      # embed the absolute source path of whoever generated them.
+      # The bracket in the pattern is load-bearing: written literally, this rule
+      # would match its own definition and fail on every run.
+      - name: No absolute home paths in tracked files
+        run: |
+          if git grep -InE "/Users[/]" -- . ':!*.md'; then
+            echo "::error::A tracked file contains an absolute home path."
+            exit 1
+          fi
+
+      - name: No bytecode caches tracked
+        run: |
+          if git ls-files | grep -E '__pycache__|\.pyc$'; then
+            echo "::error::Python bytecode is tracked; it embeds absolute source paths."
+            exit 1
+          fi
+
+      - name: Licence notices present
+        run: |
+          test -f LICENSE
+          test -f THIRD-PARTY-NOTICES.md
+          grep -q "KeyboardShortcuts" THIRD-PARTY-NOTICES.md

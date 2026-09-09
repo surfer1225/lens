@@ -1,0 +1,114 @@
+name: Bug report
+description: Something Lens did wrong, or did not do
+labels: ["bug"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Window management on macOS goes wrong in
+        app-specific ways, so the details below are genuinely what makes a
+        report actionable — especially **which application** the window
+        belonged to.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+      placeholder: |
+        Pressed ⌥⌘← with a Terminal window focused.
+        Expected: window fills the left half.
+        Got: window is left-half wide but a few pixels short, and sits 4px from the bottom.
+    validations:
+      required: true
+
+  - type: input
+    id: app
+    attributes:
+      label: Which application's window
+      description: >
+        The app whose window misbehaved, not Lens. If it happens in several,
+        list them; if you have checked an app where it works correctly, that
+        contrast is very useful.
+      placeholder: Terminal, Google Chrome, IntelliJ IDEA…
+    validations:
+      required: true
+
+  - type: input
+    id: action
+    attributes:
+      label: Which action or shortcut
+      placeholder: Left Half (⌥⌘←), or "layout restore after replugging a monitor"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: reproducible
+    attributes:
+      label: Does it happen every time?
+      options:
+        - Every time
+        - Most of the time
+        - Occasionally
+        - Happened once
+    validations:
+      required: true
+
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "15.2"
+    validations:
+      required: true
+
+  - type: input
+    id: hardware
+    attributes:
+      label: Mac model and chip
+      placeholder: MacBook Pro 14-inch, M3 Pro
+    validations:
+      required: true
+
+  - type: textarea
+    id: displays
+    attributes:
+      label: Display setup
+      description: >
+        How many displays, their resolutions, and their arrangement. Nearly all
+        the hard bugs in a window manager are multi-display bugs, so please
+        include this even when it seems irrelevant.
+      placeholder: |
+        Built-in 1512x982 plus a Studio Display 2560x1440 to the right.
+        Scaled resolution, external is the primary.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Lens version or commit
+      description: Output of `git rev-parse --short HEAD` if you built from source.
+      placeholder: 513d050
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: environment
+    attributes:
+      label: Anything else running?
+      description: >
+        Other window managers compete for the same global hotkeys, and Carbon
+        registration is first-come-first-served.
+      options:
+        - label: Stage Manager is enabled
+        - label: Another window manager is installed (Rectangle, Magnet, yabai, Amethyst, Moom…)
+        - label: The window was in native fullscreen
+        - label: Lens has Accessibility permission (System Settings → Privacy & Security)
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots or a short screen recording help a lot for layout bugs.
