@@ -4,9 +4,8 @@
 
 # Lens
 
-**A keyboard-driven window manager for macOS.**
-A native arm64 replacement for [Spectacle](https://github.com/eczarny/spectacle), with the same
-default shortcuts.
+**The keyboard-driven window manager that remembers.**
+Spectacle's shortcuts, native on Apple silicon — and your windows come back when you redock.
 
 `macOS 14+` · `Swift 6` · `Apple silicon` · `no network access` · `MIT`
 
@@ -14,8 +13,24 @@ default shortcuts.
 
 ---
 
+## What makes it different
+
+- **Your windows come back when you redock.** Lens remembers where every window sat in each
+  display setup and restores it automatically when that setup returns — no layouts to define,
+  no shortcut to press. ([Layout memory](#layout-memory))
+- **Undo for window moves.** Every window keeps its own undo/redo history, several steps deep,
+  instead of a single "restore".
+- **Spectacle muscle memory, day one.** All eighteen Spectacle actions with identical default
+  shortcuts, plus 14 more.
+- **Small, private, readable.** Native Swift 6, no network access, no analytics, and a geometry
+  core with 67 unit tests that you can read in an afternoon.
+
+How it compares with Rectangle, Rectangle Pro, Moom, and macOS tiling:
+[Alternatives](#alternatives).
+
 ## Contents
 
+- [What makes it different](#what-makes-it-different)
 - [Why this exists](#why-this-exists)
 - [Project status](#project-status)
 - [Features](#features)
@@ -47,6 +62,10 @@ recent macOS versions exist.
 Lens is a native arm64 rewrite. It reproduces all eighteen of Spectacle's actions with **identical
 default shortcuts**, so existing muscle memory transfers on day one, and adds the things fifteen
 years of macOS changes made necessary.
+
+The biggest of those is docking. A laptop that moves between a desk with monitors and a sofa
+without them loses its window arrangement every time: macOS piles everything onto the remaining
+screen and never puts it back. Lens does.
 
 ## Project status
 
@@ -156,8 +175,8 @@ entitlement; terminals do not.
 ### If SwiftPM will not run
 
 SwiftPM compiles `Package.swift` into a helper binary and **executes** it to read the manifest. On
-machines with binary authorisation software (Google's [Santa](https://github.com/google/santa) in
-lockdown mode, and similar corporate tooling), that helper is not allowlisted, so every
+machines with binary authorisation software (such as Google's [Santa](https://github.com/google/santa)
+in lockdown mode), that helper is not allowlisted, so every
 `swift build` fails with:
 
 ```
@@ -512,18 +531,34 @@ defaults, there is nothing to do.
 
 ## Alternatives
 
-Worth knowing about, honestly:
+Worth knowing about, honestly. Checked October 2026; corrections welcome.
 
-- **[Rectangle](https://rectangleapp.com)** — the mature, actively maintained Spectacle successor.
-  Ships a Spectacle-compatible preset, drag-to-edge snapping, and years of app-specific
-  workarounds. If you want working software rather than something to hack on, install this
-  instead.
-- **[yabai](https://github.com/koekeishiya/yabai)** — full tiling window manager. Far more
-  powerful, considerably more setup, and needs SIP partially disabled for some features.
-- **[Amethyst](https://ianyh.com/amethyst/)** — automatic tiling, xmonad-inspired.
-- **macOS built-in tiling** — free, no permissions, but limited to halves and quarters.
+| | Lens | [Rectangle](https://rectangleapp.com) | [Rectangle Pro](https://rectangleapp.com/pro) | [Moom](https://manytricks.com/moom/) | macOS tiling |
+|---|---|---|---|---|---|
+| Price | Free | Free | Paid (one-time, 3 Macs) | $15 one-time | Free |
+| Open source | Yes (MIT) | Yes (MIT) | No | No | No |
+| Restores your arrangement when displays change | **Automatically, no setup** | Not documented | Applies a workspace you define in advance | Saved layouts you trigger | No |
+| Undo window moves | **Per-window, multi-step** | Single restore | Not stated | Not stated | No |
+| Spectacle default shortcuts | Yes | Yes (preset) | Imports Rectangle's | No | No |
+| Halves, thirds, sixths, quarters | Yes | Yes (also ninths, eighths) | Yes, plus custom sizes | Custom | Halves and quarters |
+| Repeated press moves to the next display | Yes | Yes (option) | Configurable repeats | Via chains | No |
+| Drag to snap | No (keyboard only) | Yes | Yes, custom snap areas | Yes | Yes |
+| Network access | None | Update checks | License activation (Paddle) | Not stated | — |
 
-Lens exists because it is small enough to read in an afternoon and change to taste.
+Which to pick:
+
+- **[Rectangle](https://rectangleapp.com)** — the mature, actively maintained Spectacle successor,
+  with drag-to-snap and years of app-specific workarounds. The best choice if you mostly work at
+  one desk and want the widest app coverage.
+- **[Rectangle Pro](https://rectangleapp.com/pro) / [Moom](https://manytricks.com/moom/)** — for
+  custom layouts, snap areas, and app workspaces.
+- **[yabai](https://github.com/koekeishiya/yabai)** / **[Amethyst](https://ianyh.com/amethyst/)** —
+  for automatic tiling. yabai needs SIP partially disabled for some features.
+- **macOS built-in tiling** — free and permission-free, but limited to halves and quarters.
+- **Lens** — if you move between display setups and want your windows back, want undo for window
+  moves, or want something small enough to read and change to taste.
+
+For a feature-by-feature review and the roadmap, see [FEATURES.md](FEATURES.md).
 
 ## Contributing
 

@@ -9,6 +9,13 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 First public release is not yet cut. Everything below is what exists on `main`.
 
+### Documentation
+
+- README now leads with what sets Lens apart (automatic layout memory, per-window undo) and
+  compares it honestly with Rectangle, Rectangle Pro, Moom and macOS tiling.
+- `FEATURES.md`: a feature-by-feature review of the alternatives, with what Lens will and won't
+  build, and the roadmap.
+
 ### Added
 
 - Spectacle parity: all eighteen of its actions with identical default shortcuts — halves,
