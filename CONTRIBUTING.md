@@ -19,8 +19,8 @@ make test     # unit tests — no permissions, no displays, no running apps need
 make package  # build and ad-hoc sign Lens.app into ~/.cache/lens-build
 ```
 
-If SwiftPM fails with `Invalid manifest ... Missing or empty JSON output`, you are on a machine
-with binary authorisation software. `make package` avoids SwiftPM entirely — see the README.
+If SwiftPM fails with `Invalid manifest ... Missing or empty JSON output`, use `make package`,
+which avoids SwiftPM entirely. See the README.
 
 ## The one architectural rule
 

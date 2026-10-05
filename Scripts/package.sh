@@ -3,10 +3,9 @@
 # Builds Lens.app by driving swiftc directly, without SwiftPM.
 #
 # Why this exists: SwiftPM compiles Package.swift into a helper binary and *executes* it to read
-# the manifest. On a machine whose security policy refuses to execute freshly built binaries from
-# user-writable paths, that step fails and no SwiftPM command works at all — including `swift
+# the manifest. Where that helper can't run, no SwiftPM command works at all, including `swift
 # build`. Compiling and linking with swiftc never runs the output, so it succeeds where SwiftPM
-# cannot.
+# cannot. The Homebrew formula builds through this script too.
 #
 # `make app` (SwiftPM) remains the primary path. Use this when SwiftPM is unavailable, or to
 # produce a bundle without resolving the package graph.
@@ -17,9 +16,9 @@
 #   Scripts/package.sh --install    ...and copy straight to /Applications (needs App Management)
 #   Scripts/package.sh --no-build   skip compilation, act on the existing bundle
 #
-# --no-build matters under a binary authorisation system such as Santa: linking is not
-# reproducible, so every rebuild yields a new hash and voids any allowlist approval for the old
-# one. Use it to wrap an already-approved bundle in a disk image without disturbing it.
+# --no-build exists because linking is not reproducible: every rebuild yields a new code hash, and
+# with it macOS drops the Accessibility grant. Use it to wrap a bundle you have already approved
+# in a disk image without disturbing it.
 
 set -euo pipefail
 

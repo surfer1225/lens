@@ -7,7 +7,14 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-First public release is not yet cut. Everything below is what exists on `main`.
+### Documentation
+
+- Clearer README notes on building without SwiftPM.
+
+## [1.0.0] - 2026-10-05
+
+First public release. Install with `brew install surfer1225/tap/lens-window-manager`, or build
+from source.
 
 ### Documentation
 
@@ -57,3 +64,6 @@ First public release is not yet cut. Everything below is what exists on `main`.
   identity avoids this.
 - Behaviour against the long tail of individual applications is not systematically verified. Bug
   reports naming the specific app are the most useful contribution.
+
+[Unreleased]: https://github.com/surfer1225/lens/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/surfer1225/lens/releases/tag/v1.0.0

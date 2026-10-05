@@ -194,19 +194,17 @@ make package --dmg     # or: bash Scripts/package.sh --dmg
 then open `~/.cache/lens-build/Lens.dmg` and drag Lens across in Finder. Finder always has the
 entitlement; terminals do not.
 
-### If SwiftPM will not run
+### Building without SwiftPM
 
-SwiftPM compiles `Package.swift` into a helper binary and **executes** it to read the manifest. On
-machines with binary authorisation software (such as Google's [Santa](https://github.com/google/santa)
-in lockdown mode), that helper is not allowlisted, so every
-`swift build` fails with:
+SwiftPM compiles `Package.swift` into a helper binary and **executes** it to read the manifest. If
+your Mac won't run that helper, every `swift build` fails before a line of Lens is compiled:
 
 ```
 error: Invalid manifest ... Missing or empty JSON output
 ```
 
-before a line of Lens is compiled. `Scripts/package.sh` sidesteps this by driving `swiftc`
-directly — compiling and linking never executes the output:
+`Scripts/package.sh` sidesteps SwiftPM by driving `swiftc` directly; compiling and linking never
+execute the output. The Homebrew formula builds this way too:
 
 ```sh
 make package           # build + sign, no SwiftPM
@@ -489,12 +487,6 @@ on-screen but cannot make it exactly half a screen wide.
 
 **Windows land in the wrong place with Stage Manager on.** Adjust *Reserve space for Stage
 Manager*.
-
-**Binary authorisation software blocks it.** On managed Macs running Santa in lockdown mode or
-similar, a locally built binary has no allowlist rule and is killed at `exec`. Every rebuild
-produces a new hash and needs re-approval, so if you are developing rather than just installing,
-ask your admins for a lockdown exemption or for the linker to be registered for transitive
-allowlisting.
 
 ## Development
 
