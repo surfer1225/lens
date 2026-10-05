@@ -15,6 +15,9 @@ First public release is not yet cut. Everything below is what exists on `main`.
   compares it honestly with Rectangle, Rectangle Pro, Moom and macOS tiling.
 - `FEATURES.md`: a feature-by-feature review of the alternatives, with what Lens will and won't
   build, and the roadmap.
+- Install with Homebrew: `brew install surfer1225/tap/lens-window-manager` builds from source.
+- Requirements corrected: building needs Xcode. The Command Line Tools lack the SwiftUI macro
+  plugin that `@State` needs on current SDKs.
 
 ### Added
 

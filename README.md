@@ -148,9 +148,31 @@ Shortcuts → Additional actions**.
 
 - macOS 14 (Sonoma) or later
 - Apple silicon (the build targets `arm64`; see [Intel](#intel-macs) below)
-- Xcode 16 or newer, or the Command Line Tools
+- Xcode 16 or newer. The Command Line Tools alone are not enough: recent SDKs implement SwiftUI's
+  `@State` as a macro, and its compiler plugin ships only with Xcode.
 
-There are no prebuilt releases yet — build from source.
+There are no prebuilt releases yet. Both routes below build from source on your Mac.
+
+### Homebrew
+
+```sh
+brew install surfer1225/tap/lens-window-manager
+```
+
+The formula builds Lens from the tagged source, with the dependency pinned to a verified commit,
+and installs `Lens.app` into Homebrew's prefix. Link it into Applications so Spotlight and
+Launchpad find it:
+
+```sh
+ln -sf "$(brew --prefix lens-window-manager)/Lens.app" ~/Applications/Lens.app
+```
+
+Because it is built locally, it is never quarantined, so Gatekeeper does not prompt. It is still
+ad-hoc signed (see [Code signing](#code-signing)), so after each `brew upgrade` macOS asks for
+Accessibility access again.
+
+(The formula is named `lens-window-manager` because `lens` is already taken in Homebrew by the
+Kubernetes IDE.)
 
 ### Build and install
 
