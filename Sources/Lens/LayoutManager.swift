@@ -13,7 +13,8 @@ import Observation
 /// periodically records where everything is, keyed by a fingerprint of that configuration. When
 /// the configuration changes, it looks up whatever it last recorded for the *new* setup and
 /// restores it. Because the recording happened before the change, redocking finds a layout that
-/// describes the desk you are returning to.
+/// describes the desk you are returning to. Sleep, wake and displays that briefly drop out are
+/// handled too; `MemoryPolicy` holds those rules, and this class carries out its decisions.
 @MainActor
 @Observable
 final class LayoutManager {
@@ -24,10 +25,6 @@ final class LayoutManager {
     /// to stop before deciding anything has actually changed.
     private static let changeDebounce: TimeInterval = 1.5
 
-    /// After restoring, give windows time to settle before recording again — otherwise the very
-    /// next capture could record a half-applied layout on top of a good one.
-    private static let settleAfterRestore: TimeInterval = 5
-
     private static let storageKey = "layouts"
 
     private(set) var library: LayoutLibrary
@@ -37,13 +34,15 @@ final class LayoutManager {
     var isEnabled: Bool = true
     var settings: Settings = .default
 
+    private var policy: MemoryPolicy
     private var captureTimer: Timer?
     private var pendingChange: DispatchWorkItem?
-    private var capturePausedUntil: Date = .distantPast
 
     init() {
+        let setup = Self.fingerprint()
         self.library = Self.load()
-        self.currentFingerprint = Self.fingerprint()
+        self.currentFingerprint = setup
+        self.policy = MemoryPolicy(setup: setup)
     }
 
     // MARK: - Lifecycle
@@ -57,45 +56,66 @@ final class LayoutManager {
             MainActor.assumeIsolated { self?.screenParametersChanged() }
         }
 
+        // The Mac sleeping and its displays sleeping both scatter windows, so both count.
+        let workspace = NSWorkspace.shared.notificationCenter
+        for name in [NSWorkspace.willSleepNotification, NSWorkspace.screensDidSleepNotification] {
+            workspace.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.handle(.sleep) }
+            }
+        }
+        for name in [NSWorkspace.didWakeNotification, NSWorkspace.screensDidWakeNotification] {
+            workspace.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.handle(.wake) }
+            }
+        }
+
         captureTimer = Timer.scheduledTimer(
             withTimeInterval: Self.captureInterval, repeats: true
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.captureIfStable() }
+            MainActor.assumeIsolated { self?.handle(.tick(setup: Self.fingerprint())) }
         }
     }
 
-    // MARK: - Display changes
+    // MARK: - Events
 
     private func screenParametersChanged() {
+        handle(.displaysChanging(setup: Self.fingerprint()))
+
         // Coalesce the burst of notifications a single plug event produces.
         pendingChange?.cancel()
-
         let work = DispatchWorkItem { [weak self] in
-            MainActor.assumeIsolated { self?.handleSettledChange() }
+            MainActor.assumeIsolated { self?.handle(.displaysSettled(setup: Self.fingerprint())) }
         }
         pendingChange = work
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.changeDebounce, execute: work)
     }
 
-    private func handleSettledChange() {
-        let newFingerprint = Self.fingerprint()
-        guard newFingerprint != currentFingerprint else { return }
+    private func handle(_ event: MemoryPolicy.Event) {
+        let action = policy.handle(event)
+        currentFingerprint = policy.currentSetup
 
-        currentFingerprint = newFingerprint
+        switch action {
+        case .none:
+            break
+        case .capture:
+            captureIfAllowed()
+        case .restore(let setup):
+            if isEnabled, let saved = library.layout(for: setup) { apply(saved) }
+        }
 
-        // Do not record anything for a moment: right now every window is wherever macOS dumped
-        // it, and capturing that would overwrite the good layout for this setup with the mess we
-        // are about to fix.
-        capturePausedUntil = Date().addingTimeInterval(Self.settleAfterRestore)
-
-        guard isEnabled, let saved = library.layout(for: newFingerprint) else { return }
-        apply(saved)
+        // The post-wake restore is due sooner than the regular timer would notice.
+        if case .wake = event, let due = policy.wakeRestoreDue {
+            let delay = max(0, due.timeIntervalSinceNow)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                MainActor.assumeIsolated { self?.handle(.tick(setup: Self.fingerprint())) }
+            }
+        }
     }
 
     // MARK: - Capture
 
-    private func captureIfStable() {
-        guard isEnabled, Date() >= capturePausedUntil, AXIsProcessTrusted() else { return }
+    private func captureIfAllowed() {
+        guard isEnabled, AXIsProcessTrusted() else { return }
         guard Self.fingerprint() == currentFingerprint else { return }
 
         let layout = captureCurrentLayout()

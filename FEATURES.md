@@ -12,18 +12,19 @@ Each decision is tested against what Lens is for:
   that would double the codebase for a niche needs a very good reason.
 - **Private.** No network access, no analytics, no accounts.
 
-Decisions: **Have** (already in Lens) · **Build** (on the roadmap) · **Later** (fits, not yet) ·
+Decisions: **Have** (already in Lens) · **Later** (fits, not yet) ·
 **Skip** (conflicts with the above, or not worth it).
 
 ## Remembering
 
 | Feature | Where | Decision | Why |
 |---|---|---|---|
-| Restore the arrangement automatically when a display setup returns | Lens only (Rectangle Pro applies predefined workspaces on display change) | Have | The headline feature. |
-| Per-window, multi-step undo/redo | Lens only (Rectangle has a single restore) | Have | |
-| Restore after an app relaunches or the Mac restarts | — | **Build** | The natural next step for "remembers": the same matching, triggered by app launch. |
-| Named layouts you can save and switch to ("Focus", "Review") | Rectangle Pro workspaces, Moom layouts | **Build** | Builds on layout memory's storage; keyboard-triggered. |
-| Show what layout memory has saved, and forget a setup | — | **Build** | Makes the automatic behaviour visible and trustworthy. |
+| Restore the arrangement automatically when a display setup returns | Lens; paid apps Resettle and Putback. Rectangle Pro, Moom and BetterTouchTool apply layouts you save, on display change | Have | The headline feature. Among free, open-source apps, only Lens does it automatically. |
+| Restore after sleep and wake, and after a display briefly drops out | Rectangle Pro (a "waking from sleep" trigger for saved layouts) | Have | Records just before sleep, restores after wake. |
+| Per-window, multi-step undo/redo | Lens only (Rectangle and Rectangle Pro have a single restore; macOS restores the previous size) | Have | |
+| Restore after an app relaunches or the Mac restarts | Rectangle Pro ("window opens" trigger, for saved layouts) | Later | The same matching, triggered by app launch. |
+| Named layouts you can save and switch to ("Focus", "Review") | Rectangle Pro workspaces, Moom layouts | Later | Builds on layout memory's storage; keyboard-triggered. |
+| Show what layout memory has saved, and forget a setup | — | Later | Makes the automatic behaviour visible and trustworthy. |
 
 ## Arranging
 
@@ -47,22 +48,25 @@ Decisions: **Have** (already in Lens) · **Build** (on the roadmap) · **Later**
 |---|---|---|---|
 | Gaps, per-app exclusions, Stage Manager reservation | Lens, Rectangle (gaps, ignore) | Have | |
 | Settings import/export | Lens, Moom | Have | |
-| URL scheme (`lens://action?name=left-half`) | Rectangle | **Build** | Lets Raycast, Alfred, scripts and Stream Deck drive Lens. Small. |
-| Shortcuts and Spotlight actions (App Intents) | — | **Build** | The native way to automate macOS today. |
+| URL scheme (`lens://action?name=left-half`) | Rectangle | Later | Lets Raycast, Alfred, scripts and Stream Deck drive Lens. Small. |
+| Shortcuts and Spotlight actions (App Intents) | — | Later | The native way to automate macOS today. |
 | Settings sync across Macs | Rectangle Pro (iCloud) | Later | Through a file in a folder the user chooses, not an account. |
 | Update checks | Rectangle (Sparkle) | Later | Only as an opt-in check against GitHub releases, keeping "no network access" the default. |
 
 ## Roadmap
 
-1. **Restore on app relaunch and restart**, so layout memory covers the cases users hit next.
-2. **Named layouts**, saved and switched by keyboard.
-3. **Layout memory inspector:** see what's remembered for each display setup, and forget it.
-4. **URL scheme and Shortcuts actions.**
-5. Later: hover move/resize, custom sizes, ninths/eighths, file-based settings sync.
+Lens stays small on purpose. The priority is making layout memory dependable in every way macOS
+scatters windows: display changes, brief drop-outs, and sleep and wake (done, unreleased). Beyond
+that, the **Later** items above are ideas rather than commitments. Tell us in an issue which ones
+you would use.
 
 ## Sources
 
 [Rectangle README](https://github.com/rxhanson/Rectangle) ·
 [Rectangle Pro](https://rectangleapp.com/pro) ·
+[Rectangle Pro layouts](https://rectangleapp.com/pro/docs/layouts/) ·
 [Moom](https://manytricks.com/moom/) ·
-[macOS tiling (Sequoia)](https://www.macrumors.com/2024/06/12/macos-sequoia-window-tiling/)
+[Resettle](https://macoswm.com/wm/resettle) ·
+[Putback](https://putback.app/why-mac-windows-move/) ·
+[macOS tiling (Sequoia)](https://www.macrumors.com/2024/06/12/macos-sequoia-window-tiling/) ·
+[macOS 27](https://9to5mac.com/2026/09/14/macos-27-golden-gate-now-available-here-is-everything-new/)

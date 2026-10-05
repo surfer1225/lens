@@ -7,6 +7,20 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Layout memory now survives sleep and wake.** Waking the Mac or its displays could leave
+  windows piled on one screen with the display setup unchanged, so nothing was restored, and the
+  next periodic capture then recorded the mess over the good layout. Lens now records just before
+  sleep and restores a few seconds after wake.
+- A display that drops out and returns within the debounce window (loose cable, KVM switch) now
+  triggers a restore; before, the unchanged fingerprint meant the moved windows were left alone.
+
+### Added
+
+- `Scripts/test.sh` runs the test suite without SwiftPM.
+- `MemoryPolicy`: the record/restore timing rules as a pure, tested state machine (9 new tests).
+
 ### Documentation
 
 - Clearer README notes on building without SwiftPM.

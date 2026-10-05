@@ -22,8 +22,8 @@ Spectacle's shortcuts, native on Apple silicon — and your windows come back wh
   instead of a single "restore".
 - **Spectacle muscle memory, day one.** All eighteen Spectacle actions with identical default
   shortcuts, plus 14 more.
-- **Small, private, readable.** Native Swift 6, no network access, no analytics, and a geometry
-  core with 67 unit tests that you can read in an afternoon.
+- **Small, private, readable.** Native Swift 6, no network access, no analytics, and a pure core
+  with 76 unit tests that you can read in an afternoon.
 
 How it compares with Rectangle, Rectangle Pro, Moom, and macOS tiling:
 [Alternatives](#alternatives).
@@ -302,6 +302,19 @@ monitors at home" are three separate setups, each remembering its own layout.
 When the display configuration changes, Lens waits for it to settle, looks up whatever it last
 recorded for the setup you have just arrived at, and puts the windows back.
 
+Two quieter cases scatter windows too, and Lens handles both:
+
+- **Sleep and wake.** When your Mac or its displays wake, windows can come back piled on one
+  screen even though nothing was unplugged. Lens records the arrangement just before sleep and
+  puts it back a few seconds after wake. A monitor that wakes later than the Mac is restored when
+  it arrives.
+- **A display that drops out for a moment.** A loose cable or a KVM switch can make a monitor
+  vanish and return within a second. The setup ends where it started, but macOS has already
+  moved the windows, so Lens restores them anyway.
+
+Recording pauses whenever windows may be wherever macOS put them (during a change, while asleep,
+and for a few seconds after a restore), so a scrambled moment never overwrites a good layout.
+
 Matching a remembered window to a live one runs in two passes: exact window title first, so a
 reopened app lands correctly even if it restored its windows in a different order, then by
 position for untitled windows and apps that reuse a title. Anything unmatched is left strictly
@@ -492,6 +505,7 @@ Manager*.
 
 ```sh
 make test         # unit tests (LensCore only — no permissions required)
+bash Scripts/test.sh   # the same tests without SwiftPM
 make build        # debug build via SwiftPM
 make package      # build + sign without SwiftPM
 make app          # build + sign via SwiftPM
@@ -519,8 +533,11 @@ It appears in Settings automatically.
 anywhere:
 
 ```sh
-make test
+make test              # or, without SwiftPM: bash Scripts/test.sh
 ```
+
+The timing rules for layout memory (when to record, when to restore, sleep and wake) live in
+`MemoryPolicy`, a pure state machine, so they are tested too.
 
 `LensAX` and the UI are not unit-tested — they are boundary code whose behaviour lives in other
 processes. Changes there need manual checks against the awkward cases: Terminal (cell
@@ -551,8 +568,8 @@ Worth knowing about, honestly. Checked October 2026; corrections welcome.
 |---|---|---|---|---|---|
 | Price | Free | Free | Paid (one-time, 3 Macs) | $15 one-time | Free |
 | Open source | Yes (MIT) | Yes (MIT) | No | No | No |
-| Restores your arrangement when displays change | **Automatically, no setup** | Not documented | Applies a workspace you define in advance | Saved layouts you trigger | No |
-| Undo window moves | **Per-window, multi-step** | Single restore | Not stated | Not stated | No |
+| Restores your arrangement when displays change | **Automatically, no setup** | No | Applies layouts you save, on display change, wake or app launch | Saved layouts, can trigger on display change | macOS 27 claims better persistence (not tested here) |
+| Undo window moves | **Per-window, multi-step** | Single restore | Single restore | Not stated | Restore previous size |
 | Spectacle default shortcuts | Yes | Yes (preset) | Imports Rectangle's | No | No |
 | Halves, thirds, sixths, quarters | Yes | Yes (also ninths, eighths) | Yes, plus custom sizes | Custom | Halves and quarters |
 | Repeated press moves to the next display | Yes | Yes (option) | Configurable repeats | Via chains | No |
@@ -566,11 +583,18 @@ Which to pick:
   one desk and want the widest app coverage.
 - **[Rectangle Pro](https://rectangleapp.com/pro) / [Moom](https://manytricks.com/moom/)** — for
   custom layouts, snap areas, and app workspaces.
-- **[yabai](https://github.com/koekeishiya/yabai)** / **[Amethyst](https://ianyh.com/amethyst/)** —
-  for automatic tiling. yabai needs SIP partially disabled for some features.
+- **[Loop](https://github.com/MrKai77/Loop)** — free and open source, with a radial menu that
+  suits mouse and trackpad users.
+- **[AeroSpace](https://github.com/nikitabobko/AeroSpace)** / **[yabai](https://github.com/koekeishiya/yabai)** /
+  **[Amethyst](https://ianyh.com/amethyst/)** — for automatic tiling. yabai needs SIP partially
+  disabled for some features.
+- **Paid layout-memory apps** such as [Resettle](https://macoswm.com/wm/resettle) and
+  [Putback](https://putback.app) also restore windows per display setup automatically.
+  [Stay](https://apps.apple.com/us/app/stay/id435410196?mt=12) is free but closed source.
 - **macOS built-in tiling** — free and permission-free, but limited to halves and quarters.
-- **Lens** — if you move between display setups and want your windows back, want undo for window
-  moves, or want something small enough to read and change to taste.
+  macOS 27 says it keeps windows in place across external displays better; worth trying first.
+- **Lens** — if you want Spectacle's shortcuts and automatic layout memory in one free,
+  open-source app, with undo for window moves, small enough to read and change to taste.
 
 For a feature-by-feature review and the roadmap, see [FEATURES.md](FEATURES.md).
 
