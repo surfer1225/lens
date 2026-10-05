@@ -19,8 +19,11 @@ broad: any app holding it can read and control other apps' user interfaces, incl
 windows you have open.
 
 This is unavoidable for a window manager — there is no narrower API — but it means you should
-grant it only to software you trust. Building Lens yourself from source, which is currently the
-only way to install it, is the recommended path for exactly this reason.
+grant it only to software you trust. Lens is built from source on your Mac, by hand or by the
+Homebrew formula, so you can read exactly what you grant it to.
+
+Builds are ad-hoc signed, so macOS asks for the permission again after each rebuild or
+`brew upgrade`. Only approve a Lens you just built or upgraded yourself.
 
 ### Not sandboxed
 
@@ -36,18 +39,28 @@ with a documented fallback. See the README for details and the App Store implica
 
 ### Data stored
 
-- A JSON blob in `UserDefaults` under `dev.lens.Lens`: gaps, resize step, display and fullscreen
-  preferences, and the bundle identifiers of excluded apps.
-- Keyboard shortcut bindings, stored by the shortcut recorder.
+All in `UserDefaults` under `dev.lens.Lens`:
 
-Nothing else is persisted. Exported configuration files contain the same fields and no
-system or user identifiers.
+- **Settings:** gaps, resize step, display and fullscreen preferences, and the bundle identifiers
+  of excluded apps.
+- **Keyboard shortcut bindings,** stored by the shortcut recorder.
+- **Layout memory:** for up to 20 display setups, each window's app, position and size, and its
+  title as an HMAC-SHA256 digest under a random per-Mac key (also stored there). Titles are never
+  stored as text. Erase with **Forget** in Settings.
+
+Exported configuration files contain only the settings: no layouts, and no system or user
+identifiers.
 
 ### Supply chain
 
-One dependency, [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) (MIT).
-`Scripts/package.sh` pins it to an exact commit and verifies that commit after cloning, refusing
-to build on a mismatch — git tags are mutable, commit hashes are not.
+One dependency, [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) (MIT),
+pinned to the same exact commit on every build path:
+
+- `Package.swift` requires that revision;
+- `Scripts/package.sh` verifies the commit after cloning and refuses a checkout with local changes;
+- the Homebrew formula pins both Lens and the dependency to tag and commit.
+
+Git tags are mutable; commit hashes are not. CI actions are pinned to commits too.
 
 ## Scope
 

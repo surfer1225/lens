@@ -21,7 +21,10 @@ public struct AXWindow {
     /// Current frame in Cocoa orientation, or `nil` if the window will not report its geometry.
     public var frame: CGRect? {
         guard let position = element.position, let size = element.size else { return nil }
-        return ScreenDetector.flip(CGRect(origin: position, size: size))
+        let frame = CGRect(origin: position, size: size)
+        // The app reports this; NaN or absurd values would break the geometry downstream.
+        guard frame.isReasonable else { return nil }
+        return ScreenDetector.flip(frame)
     }
 
     public var isMovable: Bool { element.isSettable(kAXPositionAttribute) }

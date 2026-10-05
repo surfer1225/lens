@@ -21,7 +21,10 @@ jobs:
     runs-on: macos-15
 
     steps:
-      - uses: actions/checkout@v4
+      # Pinned to a commit: a tag can be moved to different code.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Toolchain
         run: |
@@ -54,7 +57,10 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      # Pinned to a commit: a tag can be moved to different code.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+        with:
+          persist-credentials: false
 
       # Guards the specific leak classes this repository has actually hit:
       # a build machine's absolute paths, and Python bytecode caches, which

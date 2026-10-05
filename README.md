@@ -347,15 +347,26 @@ else. Keyboard shortcuts are stored separately by the shortcut recorder and are 
 Lens is a local utility. Concretely:
 
 - **No network access whatsoever.** There is no `URLSession`, no analytics, no crash reporting, no
-  update check, and no server of any kind. Verify with
-  `grep -rE 'URLSession|http' Sources/`.
+  update check, and no server of any kind. Verify on the built binary:
+  `nm -u Lens.app/Contents/MacOS/Lens | grep -E 'URLSession|nw_connection|CFSocket|_socket$|_connect$'`
+  prints nothing.
 - **No subprocess execution.** Lens never shells out.
 - **No credentials, keychain access, or file scanning.**
-- **What it stores:** one JSON blob in `UserDefaults` under `dev.lens.Lens` (your settings), plus
-  the shortcut bindings the recorder keeps. That's all.
-- **What it reads:** window position and size of the frontmost app's focused window, the list of
-  running applications (to populate the exclusions picker), and
+- **What it stores**, all in `UserDefaults` under `dev.lens.Lens` on this Mac:
+  - your settings, and the shortcut bindings the recorder keeps;
+  - **layout memory:** for up to 20 display setups, each window's app, position and size, and
+    its title as a keyed hash. Titles (document names, email subjects) are never stored as
+    text: Lens only needs to know whether a title is the same as before, which a keyed hash
+    answers, and the key is random per Mac. Setups unused the longest are forgotten first.
+    **Settings → General → Layouts → Forget** erases them; turning restore off stops recording
+    but keeps what's there until you forget it. Copies can remain in Time Machine.
+- **What it reads:** the position, size and title of every window of regular apps (every 30
+  seconds while your displays stay the same, for layout memory, and for the window you act
+  on), the list of running applications (for the exclusions picker), and
   `com.apple.WindowManager`'s `GloballyEnabled` flag to detect Stage Manager.
+- **Defensive by default:** imported settings are clamped to the ranges the Settings window
+  offers, window geometry reported by other apps is ignored unless it is finite and sane, and
+  every Accessibility call has a short timeout so a hung app can't freeze Lens.
 
 ### It is not sandboxed, deliberately
 

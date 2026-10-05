@@ -77,6 +77,9 @@ public struct MemoryPolicy: Sendable {
             return now >= pausedUntil ? .capture : .none
 
         case .wake:
+            // Only a wake that follows a sleep we saw: the Mac and its displays both announce
+            // waking, sometimes far apart, and a second restore would undo moves made since.
+            guard isAsleep else { return .none }
             isAsleep = false
             wokeAt = now
             pausedUntil = max(pausedUntil, now.addingTimeInterval(Self.settleAfterWake))

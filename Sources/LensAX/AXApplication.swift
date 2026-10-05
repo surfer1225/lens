@@ -71,7 +71,11 @@ public struct AXApplication {
                 // seconds. Cap it — a beachballing app should cost us a dropped window, not a
                 // frozen menu bar.
                 app.setMessagingTimeout(0.25)
-                return app.allWindows.enumerated().map { ($0.element, $0.offset) }
+                return app.allWindows.enumerated().map { entry in
+                    // Set on each window too: it isn't documented to inherit the app's timeout.
+                    AXUIElementSetMessagingTimeout(entry.element.element, 0.25)
+                    return (entry.element, entry.offset)
+                }
             }
     }
 

@@ -69,6 +69,11 @@ build_app() {
 
   local actual
   actual="$(git -C "$DEPS/KeyboardShortcuts" rev-parse HEAD)"
+  # The commit alone isn't enough: edits to the cached checkout would keep the same HEAD.
+  if [[ -n "$(git -C "$DEPS/KeyboardShortcuts" status --porcelain)" ]]; then
+    echo "!!! $DEPS/KeyboardShortcuts has local changes. Delete it and retry." >&2
+    exit 1
+  fi
   if [[ "$actual" != "$KS_COMMIT" ]]; then
     echo "!!! KeyboardShortcuts is at $actual, expected $KS_COMMIT" >&2
     echo "!!! Refusing to build. Delete $DEPS/KeyboardShortcuts and retry, or update" >&2

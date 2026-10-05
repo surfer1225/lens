@@ -9,7 +9,9 @@ let package = Package(
         .library(name: "LensCore", targets: ["LensCore"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts.git", from: "1.10.0"),
+        // Pinned to the exact commit Scripts/package.sh verifies and the Homebrew formula
+        // builds, so every build path compiles the same dependency code.
+        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts.git", revision: "70caa8dea43e2d273cd5ab78885d7eff01df550c"),
     ],
     targets: [
         // Pure geometry and settings. No AppKit, no Accessibility, no I/O — unit-testable

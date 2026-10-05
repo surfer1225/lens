@@ -93,9 +93,30 @@ public struct LayoutLibrary: Codable, Equatable, Sendable {
         layouts[fingerprint.value]
     }
 
+    /// The most display setups remembered. Beyond it, the one used longest ago is forgotten,
+    /// so layouts from a hotel monitor two years ago don't linger.
+    public static let maximumSetups = 20
+
     public mutating func store(_ layout: Layout) {
         guard !layout.isEmpty else { return }
         layouts[layout.fingerprint.value] = layout
+        while layouts.count > Self.maximumSetups,
+              let oldest = layouts.min(by: { $0.value.capturedAt < $1.value.capturedAt })?.key {
+            layouts.removeValue(forKey: oldest)
+        }
+    }
+
+    /// The same layouts with every window title passed through `transform` (e.g. replaced by a
+    /// digest), keeping everything else.
+    public func mappingTitles(_ transform: (String) -> String) -> LayoutLibrary {
+        LayoutLibrary(layouts: layouts.mapValues { layout in
+            Layout(
+                fingerprint: layout.fingerprint,
+                snapshots: layout.snapshots.map {
+                    WindowSnapshot(bundleID: $0.bundleID, title: transform($0.title), index: $0.index, frame: $0.frame)
+                },
+                capturedAt: layout.capturedAt)
+        })
     }
 
     public mutating func forget(_ fingerprint: DisplayFingerprint) {

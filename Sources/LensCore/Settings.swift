@@ -94,6 +94,23 @@ public struct Settings: Codable, Equatable, Sendable {
         self.excludedBundleIDs = value(.excludedBundleIDs, fallback.excludedBundleIDs)
         self.undoDepth = value(.undoDepth, fallback.undoDepth)
         self.automaticLayoutRestore = value(.automaticLayoutRestore, fallback.automaticLayoutRestore)
+        clampToSupportedRanges()
+    }
+
+    /// Keeps every number in the range the Settings window offers. Imported files and stored
+    /// preferences can hold anything, and a negative undo depth or an astronomical step would
+    /// crash Lens on every use.
+    public mutating func clampToSupportedRanges() {
+        func clamp(_ value: Double, _ range: ClosedRange<Double>, _ fallback: Double) -> Double {
+            value.isFinite ? min(max(value, range.lowerBound), range.upperBound) : fallback
+        }
+        let defaults = Settings()
+        gaps.outer = clamp(gaps.outer, 0...40, defaults.gaps.outer)
+        gaps.inner = clamp(gaps.inner, 0...40, defaults.gaps.inner)
+        resizeStep = clamp(resizeStep, 5...150, defaults.resizeStep)
+        stageManagerInset = clamp(stageManagerInset, 0...200, defaults.stageManagerInset)
+        undoDepth = min(max(undoDepth, 0), 100)
+        excludedBundleIDs = Array(excludedBundleIDs.prefix(500))
     }
 
     public func excludes(bundleID: String?) -> Bool {

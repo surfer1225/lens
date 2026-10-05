@@ -15,6 +15,7 @@ struct UndoStore {
     mutating func record(_ frame: CGRect, for window: WindowID) {
         var stack = undoStacks[window, default: []]
         stack.append(frame)
+        let depth = max(0, self.depth)
         if stack.count > depth {
             stack.removeFirst(stack.count - depth)
         }

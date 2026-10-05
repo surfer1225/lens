@@ -126,9 +126,12 @@ final class AppModel {
 
     enum ImportError: LocalizedError {
         case tooLarge(bytes: Int)
+        case notAFile
 
         var errorDescription: String? {
             switch self {
+            case .notAFile:
+                "That isn't a regular file, so it can't be a Lens configuration."
             case .tooLarge(let bytes):
                 "That file is \(bytes / 1024) KB. A Lens configuration is well under 64 KB, so "
                     + "this is probably not one."
@@ -137,7 +140,8 @@ final class AppModel {
     }
 
     /// The exported file contains your gaps, resize step, and the bundle identifiers of any
-    /// apps you have excluded. Nothing else — Lens stores no other data.
+    /// apps you have excluded. Layout memory (window positions, with titles stored only as
+    /// digests) is never exported.
     func exportSettings(to url: URL) throws {
         try settings.jsonData().write(to: url, options: .atomic)
     }
@@ -147,7 +151,15 @@ final class AppModel {
         // a few hundred bytes, and pointing this at a multi-gigabyte file should fail cleanly
         // instead of trying to hold it in memory.
         let maximumBytes = 64 * 1024
-        let data = try Data(contentsOf: url, options: .mappedIfSafe)
+        // Check before reading: a FIFO or device file would otherwise block or never end.
+        let values = try url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey])
+        guard values.isRegularFile == true else { throw ImportError.notAFile }
+        if let size = values.fileSize, size > maximumBytes {
+            throw ImportError.tooLarge(bytes: size)
+        }
+        let handle = try FileHandle(forReadingFrom: url)
+        defer { try? handle.close() }
+        let data = try handle.read(upToCount: maximumBytes + 1) ?? Data()
         guard data.count <= maximumBytes else {
             throw ImportError.tooLarge(bytes: data.count)
         }

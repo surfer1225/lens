@@ -212,7 +212,10 @@ public enum RectCalculator {
     public static func horizontalThirdIndex(of window: CGRect, in work: CGRect) -> Int {
         guard work.width > 0 else { return 0 }
         let fraction = (window.midX - work.minX) / work.width
-        return min(2, max(0, Int(fraction * 3)))
+        // Clamp before converting: a NaN or huge value (geometry comes from other apps) would
+        // trap `Int(_:)`.
+        guard fraction.isFinite else { return 0 }
+        return Int(min(2, max(0, (fraction * 3).rounded(.down))))
     }
 
     /// Forces `rect` to sit inside `work` at no smaller than `minimumSize`.

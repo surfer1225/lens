@@ -38,11 +38,23 @@ final class LayoutManager {
     private var captureTimer: Timer?
     private var pendingChange: DispatchWorkItem?
 
+    /// Window titles are remembered only as keyed digests; see `TitleDigest`.
+    private let titles: TitleDigest
+    private static let titleKeyKey = "layoutTitleKey"
+
     init() {
         let setup = Self.fingerprint()
-        self.library = Self.load()
+        let titles = TitleDigest(key: Self.titleKey())
+        self.titles = titles
+        // Layouts saved by earlier versions hold raw titles: convert them once, and save.
+        let stored = Self.load()
+        let converted = stored.mappingTitles(titles.digest)
+        self.library = converted
         self.currentFingerprint = setup
         self.policy = MemoryPolicy(setup: setup)
+        if converted != stored {
+            persist()
+        }
     }
 
     // MARK: - Lifecycle
@@ -133,13 +145,13 @@ final class LayoutManager {
                   !settings.excludes(bundleID: bundleID),
                   window.isArrangeable,
                   !window.isFullscreen,
-                  let frame = window.frame
+                  let frame = window.frame, frame.isReasonable
             else { continue }
 
             snapshots.append(
                 WindowSnapshot(
                     bundleID: bundleID,
-                    title: window.title ?? "",
+                    title: titles.digest(window.title ?? ""),
                     index: index,
                     frame: frame
                 )
@@ -167,7 +179,7 @@ final class LayoutManager {
             return LiveWindow(
                 id: offset,
                 bundleID: bundleID,
-                title: entry.window.title ?? "",
+                title: titles.digest(entry.window.title ?? ""),
                 index: entry.index
             )
         }
@@ -252,6 +264,16 @@ final class LayoutManager {
 
     // MARK: - Persistence
 
+    /// The per-Mac key for title digests, created on first use.
+    private static func titleKey() -> Data {
+        if let key = UserDefaults.standard.data(forKey: titleKeyKey), key.count == 32 {
+            return key
+        }
+        let key = TitleDigest.makeKey()
+        UserDefaults.standard.set(key, forKey: titleKeyKey)
+        return key
+    }
+
     private static func load() -> LayoutLibrary {
         guard let data = UserDefaults.standard.data(forKey: storageKey),
               let decoded = try? JSONDecoder().decode(LayoutLibrary.self, from: data)
@@ -260,7 +282,10 @@ final class LayoutManager {
     }
 
     private func persist() {
-        guard let data = try? JSONEncoder().encode(library) else { return }
+        guard let data = try? JSONEncoder().encode(library) else {
+            NSLog("Lens: couldn't save remembered layouts")
+            return
+        }
         UserDefaults.standard.set(data, forKey: Self.storageKey)
     }
 }

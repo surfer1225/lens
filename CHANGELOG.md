@@ -7,6 +7,24 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Security
+
+- **Window titles are no longer stored as text.** Layout memory keeps a keyed hash (HMAC-SHA256,
+  random key per Mac) of each title, which is all matching needs; existing layouts are converted
+  on first launch. At most 20 display setups are remembered, the least recently used forgotten
+  first. The privacy documentation now describes layout memory, which it had omitted.
+- Imported settings are clamped to supported ranges (a negative undo depth or a huge resize
+  step crashed Lens on every use).
+- Window geometry reported by other apps is ignored unless finite and sane (NaN or huge values
+  could crash the thirds actions).
+- Every window, not just each app, gets a short Accessibility timeout.
+- Settings import checks the file is a regular file under 64 KB before reading it.
+- `Package.swift` pins KeyboardShortcuts to the exact commit `package.sh` and the Homebrew
+  formula use; `package.sh` also refuses a cached checkout with local edits. CI actions are
+  pinned to commits without persisted credentials.
+- A wake is acted on only after a sleep Lens saw, so a late second wake notification can't
+  restore over windows moved since.
+
 ### Fixed
 
 - **Layout memory now survives sleep and wake.** Waking the Mac or its displays could leave

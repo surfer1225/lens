@@ -187,7 +187,7 @@ private struct PointStepper: View {
     var body: some View {
         LabeledContent(title) {
             Stepper(value: $value, in: range, step: step) {
-                Text("\(Int(value)) pt")
+                Text("\(value.isFinite ? Int(value.rounded()) : 0) pt")
                     .monospacedDigit()
                     .frame(width: 52, alignment: .leading)
             }

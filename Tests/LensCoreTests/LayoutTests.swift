@@ -264,3 +264,64 @@ struct LayoutLibraryTests {
         #expect(decoded.layout(for: fingerprint)?.snapshots.first?.frame.origin.x == 42)
     }
 }
+
+@Suite("Security hardening")
+struct SecurityHardeningTests {
+    @Test("Titles are stored as keyed digests; empty titles stay empty")
+    func titleDigest() {
+        let digest = TitleDigest(key: Data(repeating: 7, count: 32))
+        let stored = digest.digest("Q3 salary review.xlsx")
+        #expect(TitleDigest.isDigest(stored))
+        #expect(!stored.contains("salary"))
+        #expect(digest.digest("Q3 salary review.xlsx") == stored)
+        #expect(digest.digest(stored) == stored)  // Never digested twice.
+        #expect(digest.digest("") == "")
+        #expect(TitleDigest(key: Data(repeating: 8, count: 32)).digest("Q3 salary review.xlsx") != stored)
+    }
+
+    @Test("Old layouts' titles are converted to digests")
+    func migration() {
+        let digest = TitleDigest(key: Data(repeating: 1, count: 32))
+        var library = LayoutLibrary()
+        library.store(layout([snapshot("com.apple.mail", "Inbox – Secret project")]))
+        let migrated = library.mappingTitles(digest.digest)
+        let title = migrated.layout(for: DisplayFingerprint(value: "test"))?.snapshots.first?.title ?? ""
+        #expect(TitleDigest.isDigest(title))
+    }
+
+    @Test("Only the most recently used display setups are kept")
+    func setupCap() {
+        var library = LayoutLibrary()
+        for index in 0..<(LayoutLibrary.maximumSetups + 5) {
+            library.store(Layout(
+                fingerprint: DisplayFingerprint(value: "setup-\(index)"),
+                snapshots: [snapshot("a", "x")],
+                capturedAt: Date(timeIntervalSince1970: Double(index))))
+        }
+        #expect(library.count == LayoutLibrary.maximumSetups)
+        #expect(library.layout(for: DisplayFingerprint(value: "setup-0")) == nil)
+        #expect(library.layout(for: DisplayFingerprint(value: "setup-24")) != nil)
+    }
+
+    @Test("Imported settings are clamped to supported ranges")
+    func clampedImport() throws {
+        let json = #"{"undoDepth": -1, "resizeStep": 1e300, "gaps": {"outer": -5, "inner": 1e9}, "stageManagerInset": 9999}"#
+        let settings = try Settings.from(jsonData: Data(json.utf8))
+        #expect(settings.undoDepth == 0)
+        #expect(settings.resizeStep == 150)
+        #expect(settings.gaps.outer == 0)
+        #expect(settings.gaps.inner == 40)
+        #expect(settings.stageManagerInset == 200)
+    }
+
+    @Test("Nonsense window geometry never traps")
+    func hostileGeometry() {
+        let work = CGRect(x: 0, y: 0, width: 1000, height: 800)
+        for bad in [CGFloat.nan, .infinity, -.infinity, 1e300] {
+            let window = CGRect(x: bad, y: 0, width: 100, height: 100)
+            #expect((0...2).contains(RectCalculator.horizontalThirdIndex(of: window, in: work)))
+            #expect(!window.isReasonable)
+        }
+        #expect(CGRect(x: 10, y: 10, width: 500, height: 400).isReasonable)
+    }
+}
